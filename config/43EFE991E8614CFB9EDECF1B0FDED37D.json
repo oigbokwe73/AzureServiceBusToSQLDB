@@ -1,0 +1,72 @@
+﻿{
+  "Id": "GetJsonPayload",
+  "LineOfBusinessProcessData": [
+    {
+      "Key": "object",
+      "Type": "Xenhey.BPM.Core.Net8.Processes.ProcessData"
+    }
+  ],
+  "Type": "",
+  "DataFlowProcess": [
+ 		{
+			"Key": "ConvertCSVToJson",
+			"Type": "Xenhey.BPM.Core.Net8.Processes.CSVProcess",
+			"Async": "false",
+			"IsEnable": "true",
+			"DataFlowProcessParameters": [
+				{
+					"Key": "ReadCSVAsPlainText",
+					"Value": "yes"
+				},
+				{
+					"Key": "messageformat",
+					"Value": "application/json"
+				}
+			]
+		},
+    {
+      "Key": "WriteToAzureStorage",
+      "Type": "Xenhey.BPM.Core.Net8.Processes.AzureTableStorageProcess",
+      "Async": "false",
+      "IsEnable": "true",
+      "DataFlowProcessParameters": [
+        {
+          "Key": "CreateRecordForAzureTableBatch",
+          "Value": "yes"
+        },
+        {
+          "Key": "BatchSize",
+          "Value": "100"
+        },
+        {
+          "Key": "StorageAccount",
+          "Value": "AzureWebJobsStorage"
+        },
+        {
+          "Key": "TableName",
+          "Value": "training20241125"
+        }
+      ]
+    },
+    {
+      "Key": "TransformPayloadResponse",
+      "Type": "Xenhey.BPM.Core.Net8.Processes.MessageBuilderProcess",
+      "Async": "false",
+      "IsEnable": "true",
+      "DataFlowProcessParameters": [
+          {
+              "Key": "QueryBuilderReplace",
+              "Value": "yes"
+          },
+          {
+              "Key": "statement",
+              "Value": "{\"StatusCode\": \"${UserID}\",\"Count\": \"${Count}\",\"BatchID\": \"${PartitionKey}\"}"
+          },
+          {
+              "Key": "filters",
+              "Value": "[{\"Key\": \"${UserID}\",\"Value\": \"UserID\"},{\"Key\": \"${Count}\",\"Value\": \"Count\"},{\"Key\": \"${PartitionKey}\",\"Value\": \"PartitionKey\"}]"
+          }
+      ]
+  }
+]
+}
