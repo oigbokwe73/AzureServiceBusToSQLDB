@@ -12,7 +12,7 @@ namespace AzureServiceBusToSQL
     {
         private readonly ILogger _logger;
 
-        public BlobTrigger(ILogger<fileprocessor> logger)
+        public fileprocessor(ILogger<fileprocessor> logger)
         {
             _logger = logger;
         }
