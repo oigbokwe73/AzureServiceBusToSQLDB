@@ -8,27 +8,26 @@ using Microsoft.Azure.Functions.Worker;
 
 namespace AzureServiceBusToSQL
 {
-    public class BlobTrigger
+    public class fileprocessor
     {
         private readonly ILogger _logger;
 
-        public BlobTrigger(ILogger<SQLDBTrigger> logger)
+        public BlobTrigger(ILogger<fileprocessor> logger)
         {
             _logger = logger;
         }
 
-        [Function("SQLDBTrigger")]
-        public void Run([ServiceBusTrigger("request", "sqlmessage", Connection = "ServiceBusConnectionString")] string mySbMsg, Int32 deliveryCount, DateTime enqueuedTimeUtc, string messageId)
+        [Function("fileprocessor")]
+        public void Run([BlobTrigger("processed/{name}", Connection = "AzureWebJobsStorage")] Stream myBlob, string name)
         {
             string ApiKeyName = "x-api-key";
             _logger.LogInformation("C# blob trigger function processed a request.");
             NameValueCollection nvc = new NameValueCollection();
-            nvc.Add(ApiKeyName, "43EFE991E8614CFB9EDECF1B0FDED37C");
+            nvc.Add(ApiKeyName, "43EFE991E8614CFB9EDECF1B0FDED37E");
+            nvc.Add("ContainerName", name);
             IOrchestrationService orchrestatorService = new ManagedOrchestratorService(nvc);
-            var processFiles = orchrestatorService.Run(mySbMsg);
-            _logger.LogInformation($"EnqueuedTimeUtc={enqueuedTimeUtc}");
-            _logger.LogInformation($"DeliveryCount={deliveryCount}");
-            _logger.LogInformation($"MessageId={messageId}");
+            var processFiles = orchrestatorService.Run(myBlob);
+            _logger.LogInformation(processFiles);
         }
     }
 }
